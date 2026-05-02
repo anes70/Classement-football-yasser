@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classement des Légendes du Football</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1a5c2e;
+      --green-light: #2d8a47;
+      --gold: #f5c518;
+      --silver: #b0b0b0;
+      --bronze: #cd7f32;
+      --bg: #f7f8f5;
+      --card-bg: #ffffff;
+      --surface: #eef0eb;
+      --text-primary: #111;
+      --text-secondary: #666;
+      --border: rgba(0,0,0,0.1);
+      --border-hover: rgba(0,0,0,0.2);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121612;
+        --card-bg: #1c201c;
+        --surface: #161a16;
+        --text-primary: #f0f0f0;
+        --text-secondary: #888;
+        --border: rgba(255,255,255,0.08);
+        --border-hover: rgba(255,255,255,0.18);
+      }
+    }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 0 60px;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0a2e14 0%, #1a5c2e 60%, #2d8a47 100%);
+      padding: 36px 28px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent 0px, transparent 38px, rgba(255,255,255,0.04) 38px, rgba(255,255,255,0.04) 39px),
+        repeating-linear-gradient(0deg, transparent 0px, transparent 38px, rgba(255,255,255,0.04) 38px, rgba(255,255,255,0.04) 39px);
+    }
+    .ball-icon {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 80px;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    .header-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 36px;
+      font-weight: 900;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+    }
+    .header-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 6px;
+      position: relative;
+      letter-spacing: 0.5px;
+    }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 8px;
+      padding: 14px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .filter-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-hover);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--green-light); color: var(--green-light); }
+    .filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      padding: 0 20px;
+      margin: 16px 0 0;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .stat-card:first-child { border-radius: 10px 0 0 10px; }
+    .stat-card:last-child { border-radius: 0 10px 10px 0; border-left: none; }
+    .stat-card + .stat-card { border-left: none; }
+    .stat-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--green);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* RANKING */
+    .ranking-list {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .player-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      animation: fadeIn 0.3s ease;
+    }
+    .player-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .rank-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 22px;
+      width: 34px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rank-1 { color: var(--gold); }
+    .rank-2 { color: var(--silver); }
+    .rank-3 { color: var(--bronze); }
+    .rank-other { color: var(--text-secondary); font-size: 16px; }
+
+    .player-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .player-info { flex: 1; min-width: 0; }
+    .player-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .pos-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+    .pos-attaquant { background: #fff3e0; color: #e65100; }
+    .pos-milieu    { background: #e3f2fd; color: #1565c0; }
+    .pos-defenseur { background: #e8f5e9; color: #1a5c2e; }
+    .pos-gardien   { background: #f3e5f5; color: #6a1b9a; }
+
+    .vote-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .vote-bar-wrap {
+      flex: 1;
+      height: 5px;
+      background: var(--surface);
+      border-radius: 3px;
+      overflow: hidden;
+      max-width: 120px;
+    }
+    .vote-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--green-light);
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    .vote-count {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .vote-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 18px;
+      border-radius: 24px;
+      border: 1.5px solid var(--green-light);
+      background: transparent;
+      color: var(--green-light);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .vote-btn:hover:not(:disabled) { background: var(--green-light); color: #fff; }
+    .vote-btn.voted { background: var(--green); border-color: var(--green); color: #fff; cursor: default; }
+    .vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ADD PLAYER */
+    .add-section {
+      margin: 4px 20px 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .add-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .add-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .add-form input,
+    .add-form select {
+      font-size: 14px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-hover);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Barlow', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .add-form input:focus,
+    .add-form select:focus { border-color: var(--green-light); }
+    .input-name { flex: 2; min-width: 140px; }
+    .input-club { flex: 2; min-width: 120px; }
+    .input-flag { width: 72px; flex: none; }
+    .add-form select { flex: 1; min-width: 110px; }
+    .add-submit {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 9px 22px;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .add-submit:hover { background: var(--green-light); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: #1a5c2e;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 12px 24px;
+      border-radius: 30px;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 999;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 500px) {
+      .header-title { font-size: 26px; }
+      .player-card { padding: 10px 12px; gap: 10px; }
+      .player-name { font-size: 16px; }
+      .vote-btn { padding: 7px 12px; font-size: 12px; }
+      .stat-value { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="ball-icon">⚽</div>
+    <div class="header-title">Classement des Légendes</div>
+    <div class="header-sub">Vote pour ton meilleur joueur de tous les temps</div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterPlayers('all', this)">Tous</button>
+    <button class="filter-btn" onclick="filterPlayers('attaquant', this)">Attaquants</button>
+    <button class="filter-btn" onclick="filterPlayers('milieu', this)">Milieux</button>
+    <button class="filter-btn" onclick="filterPlayers('defenseur', this)">Défenseurs</button>
+    <button class="filter-btn" onclick="filterPlayers('gardien', this)">Gardiens</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-players">10</div>
+      <div class="stat-label">Joueurs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-votes">0</div>
+      <div class="stat-label">Votes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-leader">—</div>
+      <div class="stat-label">En tête</div>
+    </div>
+  </div>
+
+  <div class="ranking-list" id="ranking-list"></div>
+
+  <div class="add-section">
+    <div class="add-title">➕ Ajouter un joueur</div>
+    <div class="add-form">
+      <input class="input-name" type="text" id="new-name" placeholder="Nom du joueur" maxlength="30" />
+      <input class="input-club" type="text" id="new-club" placeholder="Club / Pays" maxlength="30" />
+      <select id="new-pos">
+        <option value="attaquant">Attaquant</option>
+        <option value="milieu">Milieu</option>
+        <option value="defenseur">Défenseur</option>
+        <option value="gardien">Gardien</option>
+      </select>
+      <input class="input-flag" type="text" id="new-flag" placeholder="🇫🇷" maxlength="4" />
+      <button class="add-submit" onclick="addPlayer()">Ajouter</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const COLORS = ['#1a5c2e','#1565c0','#6a1b9a','#b71c1c','#e65100','#00695c','#4a148c','#880e4f'];
+  const BG_COLORS = ['#e8f5e9','#e3f2fd','#f3e5f5','#ffebee','#fff3e0','#e0f2f1','#ede7f6','#fce4ec'];
+
+  let players = [
+    { id:1,  name:'Lionel Messi',      club:'Inter Miami / Argentine', pos:'attaquant', flag:'🇦🇷', votes:0, voted:false, ci:0 },
+    { id:2,  name:'Cristiano Ronaldo', club:'Al-Nassr / Portugal',     pos:'attaquant', flag:'🇵🇹', votes:0, voted:false, ci:1 },
+    { id:3,  name:'Kylian Mbappé',     club:'Real Madrid / France',    pos:'attaquant', flag:'🇫🇷', votes:0, voted:false, ci:2 },
+    { id:4,  name:'Erling Haaland',    club:'Man City / Norvège',      pos:'attaquant', flag:'🇳🇴', votes:0, voted:false, ci:3 },
+    { id:5,  name:'Vinicius Jr',       club:'Real Madrid / Brésil',    pos:'attaquant', flag:'🇧🇷', votes:0, voted:false, ci:4 },
+    { id:6,  name:'Luka Modrić',       club:'Real Madrid / Croatie',   pos:'milieu',    flag:'🇭🇷', votes:0, voted:false, ci:5 },
+    { id:7,  name:'Kevin De Bruyne',   club:'Man City / Belgique',     pos:'milieu',    flag:'🇧🇪', votes:0, voted:false, ci:6 },
+    { id:8,  name:'Virgil van Dijk',   club:'Liverpool / Pays-Bas',    pos:'defenseur', flag:'🇳🇱', votes:0, voted:false, ci:7 },
+    { id:9,  name:'Manuel Neuer',      club:'Bayern Munich / Allemagne',pos:'gardien',  flag:'🇩🇪', votes:0, voted:false, ci:0 },
+    { id:10, name:'Thibaut Courtois',  club:'Real Madrid / Belgique',  pos:'gardien',  flag:'🇧🇪', votes:0, voted:false, ci:1 },
+  ];
+
+  let nextId = 11;
+  let currentFilter = 'all';
+
+  const posLabels = { attaquant:'Attaquant', milieu:'Milieu', defenseur:'Défenseur', gardien:'Gardien' };
+
+  function getMaxVotes() {
+    return Math.max(...players.map(p => p.votes), 1);
+  }
+
+  function sorted(filter) {
+    const list = filter === 'all' ? [...players] : players.filter(p => p.pos === filter);
+    return list.sort((a, b) => b.votes - a.votes);
+  }
+
+  function rankLabel(i) {
+    if (i === 0) return '<div class="rank-badge rank-1">🥇</div>';
+    if (i === 1) return '<div class="rank-badge rank-2">🥈</div>';
+    if (i === 2) return '<div class="rank-badge rank-3">🥉</div>';
+    return '<div class="rank-badge rank-other">' + (i + 1) + '</div>';
+  }
+
+  function updateStats() {
+    const totalVotes = players.reduce((s, p) => s + p.votes, 0);
+    const leader = [...players].sort((a, b) => b.votes - a.votes)[0];
+    document.getElementById('stat-players').textContent = players.length;
+    document.getElementById('stat-votes').textContent = totalVotes;
+    const leaderEl = document.getElementById('stat-leader');
+    if (leader && leader.votes > 0) {
+      leaderEl.textContent = leader.name.split(' ').slice(-1)[0];
+    } else {
+      leaderEl.textContent = '—';
+    }
+  }
+
+  function render() {
+    const list = sorted(currentFilter);
+    const maxV = getMaxVotes();
+    const container = document.getElementById('ranking-list');
+
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚽</div>Aucun joueur dans cette catégorie.</div>';
+      return;
+    }
+
+    container.innerHTML = list.map((p, i) => {
+      const bg = COLORS[p.ci % COLORS.length];
+      const lightBg = BG_COLORS[p.ci % BG_COLORS.length];
+      const pct = Math.round((p.votes / maxV) * 100);
+      return `
+      <div class="player-card">
+        ${rankLabel(i)}
+        <div class="player-avatar" style="background:${lightBg};">
+          ${p.flag ? `<span style="font-size:26px">${p.flag}</span>` : ''}
+        </div>
+        <div class="player-info">
+          <div class="player-name">${p.name}</div>
+          <div class="player-meta">
+            ${p.club}
+            <span class="pos-badge pos-${p.pos}">${posLabels[p.pos]}</span>
+          </div>
+          <div class="vote-row">
+            <div class="vote-bar-wrap">
+              <div class="vote-bar" style="width:${pct}%;background:${bg};"></div>
+            </div>
+            <span class="vote-count">${p.votes} vote${p.votes !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <button class="vote-btn${p.voted ? ' voted' : ''}" onclick="vote(${p.id})" ${p.voted ? 'disabled' : ''}>
+          ${p.voted ? '✓ Voté' : '▲ Voter'}
+        </button>
+      </div>`;
+    }).join('');
+
+    updateStats();
+  }
+
+  function vote(id) {
+    const p = players.find(x => x.id === id);
+    if (!p || p.voted) return;
+    p.votes++;
+    p.voted = true;
+    showToast('✓ Tu as voté pour ' + p.name.split(' ')[0] + ' !');
+    render();
+  }
+
+  function filterPlayers(pos, btn) {
+    currentFilter = pos;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function addPlayer() {
+    const name = document.getElementById('new-name').value.trim();
+    const club = document.getElementById('new-club').value.trim();
+    const pos  = document.getElementById('new-pos').value;
+    const flag = document.getElementById('new-flag').value.trim();
+    if (!name) { showToast('Entre le nom du joueur !'); return; }
+    players.push({ id: nextId++, name, club: club || '—', pos, flag: flag || '⚽', votes: 0, voted: false, ci: nextId % COLORS.length });
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-club').value = '';
+    document.getElementById('new-flag').value = '';
+    showToast(name + ' ajouté au classement !');
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+    render();
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  document.getElementById('new-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addPlayer();
+  });
+
+  render();
+</script>
+</body>
+</html>
